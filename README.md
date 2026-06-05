@@ -24,17 +24,22 @@ An intelligent music playlist generator that generates personalized playlists ba
 
 **Prerequisites:**  Node.js
 
-1. Install dependencies:
+1. Clone the repo:
+```bash
+git clone https://github.com/Rishit-Ranjan/Emoti_Tunes.git
+```
+
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Create .env.local in the project root with:
+3. Create .env.local in the project root with:
 ```env
 VITE_GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 ```
 
-3. Run locally:
+4. Run locally:
 ```bash
 npm run dev
 ```
