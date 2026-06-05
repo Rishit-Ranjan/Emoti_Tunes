@@ -29,7 +29,7 @@ const LibraryView = ({ playlists, onSelectPlaylist, onCreateFirstVibe, onRemoveP
             children = next.children || [];
         }
         return crumbs;
-    }, [playlists, path]);
+    }, [playlists, path])
 
     const countNodes = (items) => {
         return items.reduce((sum, node) => {
@@ -152,14 +152,14 @@ const LibraryView = ({ playlists, onSelectPlaylist, onCreateFirstVibe, onRemoveP
                     <div className="flex flex-wrap gap-3">
                         <button
                             onClick={handleCreateFolderClick}
-                            className="bg-violet-600 hover:bg-violet-500 text-white font-black px-6 py-3 rounded-full uppercase tracking-[0.2em] text-xs transition-all shadow-[0_15px_40px_rgba(139,92,246,0.3)]"
+                            className="bg-violet-600 hover:bg-violet-500 text-white font-black px-6 py-2 rounded-full uppercase tracking-[0.2em] text-xs transition-all shadow-[0_15px_40px_rgba(139,92,246,0.3)]"
                         >
                             New Folder
                         </button>
                         {currentFolder && (
                             <button
                                 onClick={handleRenameFolderClick}
-                                className="bg-amber-500/90 hover:bg-amber-400 text-black font-black px-6 py-3 rounded-full uppercase tracking-[0.2em] text-xs transition-all shadow-[0_15px_40px_rgba(251,191,36,0.3)]"
+                                className="bg-amber-500/90 hover:bg-amber-400 text-black font-black px-5 py-3 rounded-full uppercase tracking-[0.2em] text-xs transition-all shadow-[0_15px_40px_rgba(251,191,36,0.3)]"
                             >
                                 Rename Folder
                             </button>

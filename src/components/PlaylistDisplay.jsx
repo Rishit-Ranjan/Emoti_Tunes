@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const PlaylistDisplay = ({ playlist, emotion, onRefresh, onSave, onAddSong }) => {
+const PlaylistDisplay = ({ playlist, emotion, onRefresh, onSave, onAddSong, folderOptions = [] }) => {
+    const [selectedFolderId, setSelectedFolderId] = useState(null);
+
     const handleAddSong = (song) => {
-        if (onAddSong) onAddSong(song);
+        if (onAddSong) onAddSong(song, selectedFolderId);
     };
 
     const getYouTubeLink = (song) => song?.youtubeId ? `https://youtube.com/watch?v=${song.youtubeId}` : null;
@@ -42,11 +44,32 @@ const PlaylistDisplay = ({ playlist, emotion, onRefresh, onSave, onAddSong }) =>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-4">
-                <div className="grid grid-cols-[40px_1fr_1fr] md:grid-cols-[40px_3fr_2fr_140px] gap-6 text-sm font-black uppercase tracking-[0.3em] text-white/50 mb-6">
-                    <div>#</div>
-                    <div>Title</div>
-                    <div className="hidden md:block">Artist</div>
-                    <div className="text-right">Listen</div>
+                <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-[40px_1fr_1fr] md:grid-cols-[40px_3fr_2fr_140px] gap-6 text-sm font-black uppercase tracking-[0.3em] text-white/50 mb-6">
+                        <div>#</div>
+                        <div>Title</div>
+                        <div className="hidden md:block">Artist</div>
+                        <div className="text-right">Listen</div>
+                    </div>
+                    {folderOptions.length > 0 && (
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs uppercase tracking-[0.2em] text-white/70 mb-4">
+                            <div className="font-black text-white/60">Add selected songs to</div>
+                            <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#12121e] px-3 py-2 text-xs text-white">
+                                <span className="hidden sm:inline">Folder</span>
+                                <select
+                                    value={selectedFolderId ?? ''}
+                                    onChange={(e) => setSelectedFolderId(e.target.value || null)}
+                                    className="bg-transparent outline-none"
+                                >
+                                    {folderOptions.map(folder => (
+                                        <option key={folder.id ?? 'root'} value={folder.id ?? ''}>
+                                            {folder.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+                    )}
                 </div>
                 
                 {playlist.map((song, index) => (

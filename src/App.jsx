@@ -132,6 +132,38 @@ const App = () => {
         setUserPlaylists(prev => [newSavedPlaylist, ...prev]);
     }, [playlist, currentEmotion]);
 
+    const flattenFolders = (nodes, prefix = '') => {
+        return nodes.reduce((acc, node) => {
+            if (node.type === 'folder') {
+                const label = `${prefix}${node.name}`;
+                return [
+                    ...acc,
+                    { id: node.id, name: label },
+                    ...flattenFolders(node.children || [], `${label} / `)
+                ];
+            }
+            return acc;
+        }, []);
+    };
+
+    const handleAddSongToLibrary = (song, targetFolderId = null) => {
+        if (!song?.title) return;
+        const newSavedPlaylist = {
+            id: Date.now().toString(),
+            type: 'playlist',
+            name: `${song.title}${song.artist ? ` - ${song.artist}` : ''}`,
+            emotion: currentEmotion,
+            songs: [{
+                id: song.id || Date.now().toString(),
+                title: song.title,
+                artist: song.artist || 'Unknown Artist',
+                youtubeId: song.youtubeId
+            }],
+            date: new Date().toLocaleDateString()
+        };
+        setUserPlaylists(prev => addNodeToTree(prev, targetFolderId, newSavedPlaylist));
+    };
+
     const findNodeById = (nodes, nodeId) => {
         for (const node of nodes) {
             if (node.id === nodeId) return node;
@@ -310,6 +342,8 @@ const App = () => {
                     onRefresh={handleEmotionSelect} 
                     onReset={handleReset}
                     onSave={handleSavePlaylist}
+                    onAddSong={handleAddSongToLibrary}
+                    folderOptions={[{ id: null, name: 'Root' }, ...flattenFolders(userPlaylists)]}
                 />
             );
             case 'library': return <LibraryView 
