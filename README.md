@@ -46,3 +46,14 @@ Browser permissions are required for camera and microphone access.
 
 ## 💡Tip
 Use the camera or microphone options for the most immersive mood discovery experience, then explore the generated playlist and save favorites to your library.
+
+**Home page**
+<img width="1833" height="910" alt="image" src="https://github.com/user-attachments/assets/90a2c337-610b-4ae7-8a75-698792eb03a5" /><br/><br/>
+
+<img width="1823" height="902" alt="image" src="https://github.com/user-attachments/assets/8b103ec1-bc0a-4370-8075-b4191bbfedc3" /><br/><br/>
+
+**Joy Mood**
+<img width="1841" height="911" alt="image" src="https://github.com/user-attachments/assets/4b42ae0b-ec01-4e2f-84d6-a9bf94ce08a0" /><br/><br/>
+
+**Library**
+<img width="1840" height="905" alt="image" src="https://github.com/user-attachments/assets/c9dbe233-3be7-4fe5-8b58-646f5962ea28" />
