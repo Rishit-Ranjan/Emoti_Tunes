@@ -38,16 +38,27 @@ This folder contains a scaffold for building a real Audio Emotion Recognition (A
 4. Save the model to `training/models/`.
 5. Convert to TensorFlow.js if you want browser inference.
 
-## How to use the script
+## How to use the scripts
 
 ```bash
 python -m venv .venv
 source .venv/Scripts/activate
-pip install -r training/requirements.txt
-python training/aer_train.py --data-dir /path/to/dataset --output-model training/models/aer_model.h5
+pip install -r requirements.txt
+python aer_train.py --data-dir /path/to/audio_dataset --output-model models/aer_model.h5
 ```
+
+### Train image emotion model
+
+```bash
+python -m venv .venv
+source .venv/Scripts/activate
+pip install -r requirements.txt
+python image_train.py --data-dir /path/to/image_dataset --output-model models/image_emotion_model.h5
+```
+
+> The image dataset directory should be organized with one subfolder per emotion label, for example `happy/`, `sad/`, `angry/`.
 
 ## Next step
 
-- After training, export the model for browser use with `tensorflowjs_converter`.
-- Then update `src/services/LocalMLService.js` to load the exported model instead of using synthetic weights.
+- After training, export the model for browser use with `tensorflowjs_converter` or `tensorflowjs`.
+- Then update `src/services/LocalMLService.js` to load the exported model instead of using synthetic or heuristic image logic.

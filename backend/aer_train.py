@@ -21,7 +21,6 @@ EMOTION_MAP = {
     '08': 'surprised'
 }
 
-
 def extract_features(file_path, sample_rate=22050, n_mfcc=40):
     y, sr = librosa.load(file_path, sr=sample_rate, mono=True)
     y = librosa.util.normalize(y)
