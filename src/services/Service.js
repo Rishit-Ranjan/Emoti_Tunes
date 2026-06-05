@@ -11,6 +11,15 @@ const api = {
         });
     },
     
+    recognizeEmotionImage: async (imageBlob) => {
+        const formData = new FormData();
+        formData.append('file', imageBlob, 'capture.jpg');
+        return fetch(`${ML_API_BASE}/api/recognize-emotion-image`, {
+            method: 'POST',
+            body: formData
+        });
+    },
+    
     generatePlaylist: async (emotion, mood, numSongs = 10) => {
         return fetch(`${ML_API_BASE}/api/generate-playlist`, {
             method: 'POST',
@@ -148,6 +157,35 @@ export const generatePlaylist = async (emotion, numSongs = 10) => {
         console.warn('⚠️ Using fallback playlist');
         const mood = emotion.toLowerCase();
         return FALLBACK_PLAYLISTS[mood] || FALLBACK_PLAYLISTS.happy;
+    }
+};
+
+// Emotion detection from camera capture (image data URL)
+export const detectEmotionFromImage = async (imageData) => {
+    console.log("📸 Image Emotion Recognition (IER) via ML Model");
+    
+    try {
+        // Convert data URL to Blob for upload
+        const res = await fetch(imageData);
+        const blob = await res.blob();
+
+        const response = await withRetry(async () => {
+            return await api.recognizeEmotionImage(blob);
+        }, 'image emotion detection');
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const emotion = data.predicted_emotion || 'joy';
+        
+        console.log(`✅ Detected emotion from image: ${emotion}`);
+        return emotion;
+    } catch (error) {
+        console.error(`❌ Image emotion detection failed:`, error.message);
+        console.warn('⚠️ Defaulting to joy');
+        return 'joy';
     }
 };
 

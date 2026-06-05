@@ -120,6 +120,34 @@ def recognize_emotion():
         logger.error(f"Error in emotion recognition: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/recognize-emotion-image', methods=['POST'])
+def recognize_emotion_image():
+    """
+    Recognize emotion from uploaded image file
+    """
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+
+        # Placeholder logic: In a production environment, you would 
+        # integrate a Computer Vision model or Gemini Pro Vision here.
+        return jsonify({
+            'predicted_emotion': 'joy',
+            'confidence': 0.92,
+            'playlist_mood': 'happy',
+            'all_emotions': {
+                'sadness': 0.02, 'joy': 0.92, 'anger': 0.01, 
+                'surprise': 0.03, 'excitement': 0.02
+            }
+        }), 200
+    except Exception as e:
+        logger.error(f"Error in image recognition: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/recognize-emotion-stream', methods=['POST'])
 def recognize_emotion_stream():
     """
