@@ -1,3 +1,5 @@
+import { localML } from './LocalMLService';
+
 // ML Model API Configuration
 const ML_API_BASE = import.meta.env.VITE_ML_API_URL || "http://localhost:5000";
 
@@ -191,8 +193,16 @@ export const detectEmotionFromImage = async (imageData) => {
 
 // Emotion detection from audio file
 export const detectEmotionFromAudio = async (audioFile) => {
-    console.log("🎤 Audio Emotion Recognition (AER) via ML Model");
-    
+    console.log('🎤 Audio Emotion Recognition (AER) via Local ML Model');
+
+    try {
+        const detectedEmotion = await localML.detectEmotionFromAudio(audioFile);
+        console.log(`✅ Local model detected emotion: ${detectedEmotion}`);
+        return detectedEmotion;
+    } catch (localError) {
+        console.warn('Local AER failed:', localError.message || localError);
+    }
+
     try {
         const response = await withRetry(async () => {
             return await api.recognizeEmotion(audioFile);
@@ -205,12 +215,12 @@ export const detectEmotionFromAudio = async (audioFile) => {
         const data = await response.json();
         const emotion = data.predicted_emotion || 'joy';
         
-        console.log(`✅ Detected emotion: ${emotion} (confidence: ${(data.confidence * 100).toFixed(1)}%)`);
+        console.log(`✅ Remote API detected emotion: ${emotion} (confidence: ${(data.confidence * 100).toFixed(1)}%)`);
         return emotion;
     } catch (error) {
-        console.error(`❌ Emotion detection failed:`, error.message);
-        console.warn('⚠️ Defaulting to joy');
-        return 'joy';
+        console.error('❌ Emotion detection failed:', error.message || error);
+        console.warn('⚠️ Defaulting to Joy');
+        return 'Joy';
     }
 };
 
