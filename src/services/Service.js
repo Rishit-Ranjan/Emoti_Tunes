@@ -174,16 +174,30 @@ const assertGemini = () => {
   }
 };
 
+const normalizeJsonLikeText = (text) => {
+  if (typeof text !== 'string' || !text.trim()) return text;
+  return text
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/\r?\n/g, ' ')
+    .replace(/\s*([\{\}\[\],:])\s*/g, '$1')
+    .replace(/(['"])?([a-zA-Z0-9_]+)\1\s*:/g, '"$2":')
+    .replace(/:\s*'([^']*)'/g, ':"$1"')
+    .replace(/,\s*([}\]])/g, '$1');
+};
+
 const extractJsonArrayFromText = (text) => {
-  // Prefer array JSON
-  const start = text.indexOf('[');
-  const end = text.lastIndexOf(']');
+  const normalizedText = normalizeJsonLikeText(text);
+  if (!normalizedText) return null;
+
+  const start = normalizedText.indexOf('[');
+  const end = normalizedText.lastIndexOf(']');
   if (start !== -1 && end !== -1 && end > start) {
-    const candidate = text.slice(start, end + 1);
+    const candidate = normalizedText.slice(start, end + 1);
     try {
       return JSON.parse(candidate);
     } catch {
-      // ignore
+      // ignore and continue falling back
     }
   }
   return null;
@@ -198,27 +212,48 @@ const parseSongEntriesFromRawText = (text) => {
     .filter(Boolean);
 
   const songs = [];
-  let current = { title: '', artist: '' };
+  let current = { title: '', artist: '', youtubeId: '' };
+  let inObject = false;
 
   const pushCurrent = () => {
-    if (current.title && current.artist) {
-      songs.push({ title: current.title, artist: current.artist });
+    if (current.title || current.artist || current.youtubeId) {
+      songs.push({ ...current });
     }
-    current = { title: '', artist: '' };
+    current = { title: '', artist: '', youtubeId: '' };
+    inObject = false;
   };
 
   for (const rawLine of lines) {
     const line = rawLine.replace(/^[0-9]+[.)\s]+/, '').replace(/^[-*\s]+/, '').trim();
-    const kvMatch = line.match(/^(title|track|song)\s*[:-]\s*['"]?(.*?)['"]?$/i);
-    if (kvMatch) {
-      current.title = kvMatch[2].trim();
+    if (!line) continue;
+
+    if (/^\{\s*$/.test(line) || /^\[\s*$/.test(line)) {
+      inObject = true;
+      current = { title: '', artist: '', youtubeId: '' };
       continue;
     }
 
-    const artistMatch = line.match(/^(artist|by)\s*[:-]\s*['"]?(.*?)['"]?$/i);
-    if (artistMatch) {
-      current.artist = artistMatch[2].trim();
+    if (/^\}\,?$/.test(line) || /^\],?$/.test(line)) {
+      pushCurrent();
       continue;
+    }
+
+    const kvMatch = line.match(/^['"]?([a-zA-Z0-9_]+)['"]?\s*[:=-]\s*['"]?(.*?)['"]?$/);
+    if (kvMatch) {
+      const key = kvMatch[1].trim().toLowerCase();
+      const value = kvMatch[2].trim();
+      if (key === 'title' || key === 'track' || key === 'song') {
+        current.title = value;
+        continue;
+      }
+      if (key === 'artist' || key === 'by') {
+        current.artist = value;
+        continue;
+      }
+      if (key === 'youtubeid' || key === 'youtube_id' || key === 'youtube id' || key === 'videoid') {
+        current.youtubeId = value.replace(/^https?:\/\/.+?(?:v=|youtu\.be\/|embed\/)?/, '').slice(0, 11);
+        continue;
+      }
     }
 
     const titleArtistMatch = line.match(/^(?:['"])?(.+?)(?:['"])?\s*(?:[-–—]|by)\s*(?:['"])?(.+?)(?:['"])?$/i);
@@ -227,6 +262,7 @@ const parseSongEntriesFromRawText = (text) => {
       songs.push({
         title: titleArtistMatch[1].trim(),
         artist: titleArtistMatch[2].trim(),
+        youtubeId: ''
       });
       continue;
     }
@@ -239,16 +275,16 @@ const parseSongEntriesFromRawText = (text) => {
       }
     }
 
-    if (!current.title && !current.artist) {
+    if (!inObject) {
       const fallbackMatch = line.match(/^(?:['"])?(.+?)['"]?\s*[-–—]\s*(?:['"])?(.+?)['"]?$/i);
       if (fallbackMatch) {
-        songs.push({ title: fallbackMatch[1].trim(), artist: fallbackMatch[2].trim() });
+        songs.push({ title: fallbackMatch[1].trim(), artist: fallbackMatch[2].trim(), youtubeId: '' });
       }
     }
   }
 
   pushCurrent();
-  return songs.filter((song) => song.title && song.artist).slice(0, 20);
+  return songs.slice(0, 20);
 };
 
 const extractJsonSongsFromText = (text) => {
@@ -404,12 +440,24 @@ export const generatePlaylist = async (emotion, numSongs = 10) => {
 
     // Normalize output shape for the UI
     const normalizedSongs = songs
-      .map((s) => ({
-        title: s?.title || 'Unknown Title',
-        artist: s?.artist || 'Unknown Artist',
-        youtubeId: s?.youtubeId || '',
-        // UI tolerates extra fields; keep minimal.
-      }));
+      .map((s, index) => {
+        const title = String(s?.title || '').trim();
+        const artist = String(s?.artist || '').trim();
+        let youtubeId = String(s?.youtubeId || '').trim();
+
+        if (youtubeId.startsWith('http')) {
+          const match = youtubeId.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/);
+          youtubeId = match ? match[1] : youtubeId;
+        }
+
+        youtubeId = youtubeId.slice(0, 11);
+
+        return {
+          title: title || `Unknown Title ${index + 1}`,
+          artist: artist || 'Unknown Artist',
+          youtubeId,
+        };
+      });
 
     const finalSongs = ensurePlaylistLength(normalizedSongs, emotion, numSongs);
 
