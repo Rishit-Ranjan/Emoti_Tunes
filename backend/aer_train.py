@@ -121,9 +121,19 @@ def main(args):
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
 
+    # Stratified split fails when any class has fewer than 2 samples.
+    # Fall back to a non-stratified split in that case.
+    class_counts = np.bincount(y_encoded)
+    stratify = y_encoded if np.min(class_counts) >= 2 else None
+
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
+        X,
+        y_encoded,
+        test_size=0.2,
+        random_state=42,
+        stratify=stratify,
     )
+
 
     print(f'Training samples: {len(X_train)}, test samples: {len(X_test)}')
     model = build_model(input_shape=X_train.shape[1:], num_classes=len(label_encoder.classes_))
