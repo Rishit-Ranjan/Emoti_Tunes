@@ -180,7 +180,7 @@ const normalizeJsonLikeText = (text) => {
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/\r?\n/g, ' ')
-    .replace(/\s*([\{\}\[\],:])\s*/g, '$1')
+    .replace(/\s*([\\{}[\],:])\s*/g, '$1')
     .replace(/(['"])?([a-zA-Z0-9_]+)\1\s*:/g, '"$2":')
     .replace(/:\s*'([^']*)'/g, ':"$1"')
     .replace(/,\s*([}\]])/g, '$1');
@@ -233,7 +233,7 @@ const parseSongEntriesFromRawText = (text) => {
       continue;
     }
 
-    if (/^\}\,?$/.test(line) || /^\],?$/.test(line)) {
+    if (/^\},?$/.test(line) || /^\],?$/.test(line)) {
       pushCurrent();
       continue;
     }
