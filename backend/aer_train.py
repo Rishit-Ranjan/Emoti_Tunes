@@ -11,13 +11,13 @@ import librosa
 from tqdm import tqdm
 
 EMOTION_MAP = {
-    '01': 'neutral',
-    '03': 'happy',
-    '04': 'sad',
-    '05': 'angry',
-    '06': 'fear',
-    '07': 'disgust',
-    '08': 'pleasant'
+    '1': 'neutral',
+    '2': 'happy',
+    '3': 'sad',
+    '4': 'angry',
+    '5': 'fear',
+    '6': 'disgust',
+    '7': 'pleasant'
 }
 
 def extract_features(file_path, sample_rate=22050, n_mfcc=40):
